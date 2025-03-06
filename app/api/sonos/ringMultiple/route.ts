@@ -1,4 +1,4 @@
-import { SonosManager } from '@svrooij/sonos';
+import { SonosDevice } from '@svrooij/sonos';
 import { NextRequest } from 'next/server';
 
 type NotificationOptions = {
@@ -11,14 +11,13 @@ type NotificationOptions = {
 };
 
 function playNotification(
-  manager: SonosManager,
   options: NotificationOptions,
+  ip: string,
   resolveCB: (played: boolean) => void
 ) {
   const { trackUri, onlyWhenPlaying, timeout, volume, delayMs } = options;
-  
-  
-  manager
+  const sonos = new SonosDevice(ip);
+  sonos
     .PlayNotification({
       trackUri:
         trackUri ||
@@ -38,23 +37,16 @@ function playNotification(
 export async function POST(req: NextRequest) {
     const data: NotificationOptions = await req.json();
 
-    const manager = new SonosManager();
-
-    const { ip } = data;
-
-    // for each ip
-    for(let i = 0; i < ip.length; i++) {
-      const device = ip[i];
-      manager.InitializeFromDevice(device);
+    for(const ip of data.ip) {
+        playNotification(
+            data,
+            ip,
+            (played: boolean) => {
+              console.log(`Notification 1 was ${played ? '' : "n't"} played`);
+            }
+          );
     }
 
-  playNotification(
-    manager,
-    data,
-    (played: boolean) => {
-      console.log(`Notification 1 was ${played ? '' : "n't"} played`);
-    }
-  );
 
   return Response.json({ message: 'Notification sent' });
 }
