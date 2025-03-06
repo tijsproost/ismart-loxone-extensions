@@ -1,26 +1,21 @@
 import { SonosDevice } from '@svrooij/sonos';
 import { NextRequest } from 'next/server';
 
-const sonos = new SonosDevice('192.168.129.2');
-
-
-// Pre-start listening for events for more efficient handling.
-sonos.Events.on('currentTrack', (track) => {
-  console.log('TrackChanged %o', track);
-});
-
 type NotificationOptions = {
   trackUri?: string;
   onlyWhenPlaying?: boolean;
   timeout?: number;
   volume?: number;
   delayMs?: number;
+  ip: string;
 };
+
 function playNotification(
   options: NotificationOptions,
   resolveCB: (played: boolean) => void
 ) {
-  const { trackUri, onlyWhenPlaying, timeout, volume, delayMs } = options;
+  const { trackUri, onlyWhenPlaying, timeout, volume, delayMs, ip } = options;
+  const sonos = new SonosDevice(ip);
   sonos
     .PlayNotification({
       trackUri:
