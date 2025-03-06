@@ -11,7 +11,8 @@ export async function POST(req: NextRequest) {
     const data: NotificationOptions = await req.json();
 
     const device = new SonosDevice(data.ip);
-    const currentVolume = device.Volume || 0;
+    const deviceState = await device.GetState();
+    const currentVolume = deviceState.volume;
     const newVolume = data.direction === "up" ? currentVolume + data.step : currentVolume - data.step;
 
     device.SetVolume(newVolume);
